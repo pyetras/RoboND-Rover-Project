@@ -1,5 +1,6 @@
 import perception
 import numpy as np
+import viz
 
 def update_worldmap(rover):
   img = rover.img
@@ -20,11 +21,12 @@ def update_worldmap(rover):
 
   if (rover.roll <= 2.0 or rover.roll >= 358.0) and \
       (rover.pitch <= 2.0 or rover.pitch >= 358.0):
-    rover.worldmap[xpix, ypix, 2] += conf*20
+    rover.worldmap[xpix, ypix, 2] += conf*80
     rover.worldmap[obs_xpix, obs_ypix, 0] += conf_obs*1
   
   rover.terrain = terrain
   rover.obstacles = obstacles
+  rover.mask = masked
 
 def perception_step(rover):
   update_worldmap(rover)
@@ -33,5 +35,15 @@ def perception_step(rover):
   xpix, ypix = np.int_(perception.rover_coords(terrain))
   _, angles = perception.to_polar_coords(xpix, ypix)
   
-  rover.nav_angles = np.repeat(perception.biased_mean(angles), len(angles))
+  rover.mean_dir = np.clip(perception.biased_mean(angles), 
+                           -np.pi / 12, # 15dg
+                           np.pi / 12)
+  
+  # Vievport obstructed just in front of the rover
+  rover.nav_angles = perception.unobstruction(rover, 0, np.pi / 6, 30)
+
+  unobstructed = perception.unobstruction(rover, rover.mean_dir)
+  rover.max_vel = np.clip(unobstructed * 4 + 2, 2, 6)
+  rover.throttle_set = rover.max_vel / 10
+  rover.vision_image = viz.draw_warped(rover)
   return rover

@@ -113,7 +113,21 @@ def conf_img(threshed):
   conf[np.int_(xpix) - 1, np.int_(ypix)-160] = conf2
   return np.fliplr(np.flipud(conf))
 
-def biased_mean(angles):
+def biased_mean(angles, percentile = 0.75):
   if len(angles) <= 1: return 0
   angles = sorted(angles)
-  return angles[len(angles)*2//3]
+  return angles[int(len(angles) * percentile)]
+
+def unobstruction(rover, direction, max_angle = np.pi / 60, max_dist = 100):
+  mx, my = np.int_(rover_coords(rover.mask))
+  dist, angl = to_polar_coords(mx, my)
+  selection = (np.abs(angl - rover.mean_dir) < max_angle) & (dist < max_dist)
+  mx, my = mx[selection], my[selection]
+#   plt.plot(mx, my, '.')
+
+  intersection = np.zeros((160, 320))
+  intersection[mx, my] = 1
+
+  xpix, ypix = np.int_(rover_coords(rover.terrain))
+  return (intersection[xpix-1, ypix] == 1).sum() / len(mx)
+

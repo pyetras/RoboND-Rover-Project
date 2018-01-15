@@ -16,6 +16,10 @@ import pickle
 import matplotlib.image as mpimg
 import time
 from absl import flags, app
+import logging
+logging.getLogger('werkzeug').setLevel(logging.ERROR)
+logging.getLogger('socketio').setLevel(logging.ERROR)
+logging.getLogger('engineio').setLevel(logging.ERROR)
 
 FLAGS = flags.FLAGS
 
@@ -28,7 +32,7 @@ from supporting_functions import update_rover, create_output_images
 from rover_state import RoverState
 # Initialize socketio server and Flask application
 # (learn more at: https://python-socketio.readthedocs.io/en/latest/)
-sio = socketio.Server()
+sio = socketio.Server(logger = False)
 
 # Initialize our rover
 Rover = RoverState()
