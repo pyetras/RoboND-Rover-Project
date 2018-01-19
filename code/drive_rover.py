@@ -16,14 +16,17 @@ import pickle
 import matplotlib.image as mpimg
 import time
 from absl import flags, app
+import pickle
 import logging
+import copy
 logging.getLogger('werkzeug').setLevel(logging.ERROR)
 logging.getLogger('socketio').setLevel(logging.ERROR)
 logging.getLogger('engineio').setLevel(logging.ERROR)
 
 FLAGS = flags.FLAGS
 
-flags.DEFINE_string('image_folder', '', 'Path to image folder. This is where the images from the run will be saved.')
+flags.DEFINE_string('image_folder', '',
+  'Path to image folder. This is where the images from the run will be saved.')
 
 # Import functions for perception and decision making
 from perception_step import perception_step
@@ -56,7 +59,7 @@ def telemetry(sid, data):
     fps = frame_counter
     frame_counter = 0
     second_counter = time.time()
-  print("Current FPS: {}".format(fps))
+  # print("Current FPS: {}".format(fps))
 
   if data:
     global Rover
@@ -101,6 +104,16 @@ def telemetry(sid, data):
       timestamp = datetime.utcnow().strftime('%Y_%m_%d_%H_%M_%S_%f')[:-3]
       image_filename = os.path.join(FLAGS.image_folder, timestamp)
       image.save('{}.jpg'.format(image_filename))
+      with open(image_filename + '.pickle', 'wb') as f:
+        r = {}
+        r['pos'] = Rover.pos
+        r['yaw'] = Rover.yaw
+        r['pitch'] = Rover.pitch
+        r['roll'] = Rover.roll
+        r['vel'] = Rover.vel
+        r['steer'] = Rover.steer
+        r['picking_up'] = Rover.picking_up
+        pickle.dump(r, f)
 
   else:
     sio.emit('manual', data={}, skip_sid=True)

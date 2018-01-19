@@ -11,6 +11,8 @@ dst_size = 5
 # this is just a rough guess, feel free to change it!
 bottom_offset = 6
 image = np.zeros((160, 320))
+# _source = np.float32([[67.5, 132.5], [284 ,129],[200, 98], [128, 98]])
+# _destination = np.float32([[155, 160], [165 ,160],[165, 150], [155, 150]])
 _source = np.float32([[14, 140], [301 ,140],[200, 96], [118, 96]])
 _destination = np.float32([[image.shape[1]/2 - dst_size, image.shape[0] - bottom_offset],
             [image.shape[1]/2 + dst_size, image.shape[0] - bottom_offset],
@@ -43,6 +45,20 @@ def color_thresh(img, rgb_thresh=(160, 160, 160)):
   color_select[above_thresh] = 1
   # Return the binary image
   return color_select
+
+def rock_thresh(img):
+  im = cv2.inRange(img, (130, 110, 0), (250, 220, 60))
+  nudged = np.zeros_like(im)
+  nudged[nudged.nonzero()] = 1
+  for (shift, axis) in [(1, 0), (1, 1), (-1, 0), (-1, 1)]:
+    nudged += np.roll(im, shift, axis)
+  im[nudged < 5] = 0
+  im[nudged >= 5] = 1
+  return im
+
+def rock_warped(rock_th):
+  img, _ = perspect_transform(np.reshape(rock_th, (*rock_th.shape, 1)))
+  return img
 
 # Define a function to convert from image coords to rover coords
 def rover_coords(binary_img):
@@ -91,7 +107,7 @@ def pix_to_world(xpix, ypix, xpos, ypos, yaw, world_size, scale):
   x_pix_world = np.clip(np.int_(xpix_tran), 0, world_size - 1)
   y_pix_world = np.clip(np.int_(ypix_tran), 0, world_size - 1)
   # Return the result
-  return x_pix_world, y_pix_world
+  return y_pix_world, x_pix_world
 
 def gaussian(x, mu, sig):
   return np.exp(-np.power(x - mu, 2.) / (2 * np.power(sig, 2.)))
@@ -101,10 +117,12 @@ def threshed_confidence(xpix, ypix, max_dist = 200):
   sig = 0
 
   dist, angle = to_polar_coords(xpix, ypix)
-  angle_prob = gaussian(angle, sig, mu) / gaussian(sig, sig, mu)
-  dist = -dist / max_dist
-  dist_prob = np.clip(np.tanh(dist * 7 + 2) / 2.0 + 0.5, 0, 1)
-  return dist_prob * np.abs(angle_prob)
+  # angle_prob = gaussian(angle, sig, mu) / gaussian(sig, sig, mu)
+  # dist = -d / max_dist
+  # dist_prob = np.clip(np.tanh(dist * 7 + 2) / 2.0 + 0.5, 0, 1)
+  ans = np.zeros_like(dist)
+  ans[dist < 100] = 1
+  return ans#dist_prob * np.abs(angle_prob)
 
 def conf_img(threshed):
   xpix, ypix = rover_coords(threshed)
