@@ -26,7 +26,7 @@
 [image2]: ./calibration_images/example_grid1.jpg
 [image3]: ./calibration_images/example_rock1.jpg
 [fsm]: ./misc/D0E3C5A3-D4F0-4207-9E97-7DF045D5C0C4.jpeg
-[unobstruction]: ./unobstruction/unobstruction.png
+[unobstruction]: ./misc/unobstruction.png
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/916/view) Points
 ### Here I will consider the rubric points individually and describe how I addressed each point in my implementation.
