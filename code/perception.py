@@ -48,8 +48,8 @@ def color_thresh(img, rgb_thresh=(160, 160, 160)):
 
 def rock_thresh(img):
   im = cv2.inRange(img, (130, 110, 0), (250, 220, 60))
-  nudged = np.zeros_like(im)
-  nudged[nudged.nonzero()] = 1
+  im[im.nonzero()] = 1
+  nudged = np.copy(im)
   for (shift, axis) in [(1, 0), (1, 1), (-1, 0), (-1, 1)]:
     nudged += np.roll(im, shift, axis)
   im[nudged < 5] = 0
