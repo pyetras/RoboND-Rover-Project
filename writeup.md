@@ -2,9 +2,7 @@
 
 [//]: # (Image References)
 
-[image1]: ./misc/rover_image.jpg
-[image2]: ./calibration_images/example_grid1.jpg
-[image3]: ./calibration_images/example_rock1.jpg
+[image3]: ./calibration_images/example_rock2.jpg
 [fsm]: ./misc/D0E3C5A3-D4F0-4207-9E97-7DF045D5C0C4.jpeg
 [unobstruction]: ./misc/unobstruction.png
 [rock]: ./misc/rock.png
@@ -16,7 +14,7 @@
 
 ### Notebook Analysis
 #### 1. Run the functions provided in the notebook on test images (first with the test data provided, next on data you have recorded). Add/modify functions to allow for color selection of obstacles and rock samples.
-For obstacle detection I've used the algorithm from walkthrough video - all pixels that are not terrain are considered obstacles.
+For obstacle detection I've used the algorithm from walkthrough video - all pixels that are not terrain are considered obstacles. Furthermore I've reduced the number of pixels used for navigation and mapping to just 10m ahead of the rover.
 
 For rock detection I've selected pixels with color between (130, 110, 0) and (250, 220, 60) as rocks. Additionally I've rejected all pixels that don't have 4 neighbors also considered as rocks - this removed much of the noise and outliers that were often present before I had the color range right.
 
@@ -31,7 +29,9 @@ def rock_thresh(img):
   im[nudged >= 5] = 1
   return im
 ```
+![rock][image3]
 ![rock][rock]
+
 Before and after outlier elimination.
 
 #### 1. Populate the `process_image()` function with the appropriate analysis steps to map pixels identifying navigable terrain, obstacles and rock samples into a worldmap.  Run `process_image()` on your test data using the `moviepy` functions provided to create video output of your result.
@@ -90,7 +90,7 @@ I've implemented the project with all extensions: picking up and returning the s
 
 A successful run should take less than 10 mins, with 98-99% mapped and fidelity above 0.65.
 
-I've tried to increase fidelity by applying "uncertainty" - pixels further away from the rover or more to the side are assigned lower probability. This has not improved my solution, perhaps a formal verification of the assumptions I made regarding the probability against perspectTransform algorithm or tweaking the observation concatenation formula would yield a better result.
+I've tried to increase fidelity by applying "uncertainty" - pixels further away from the rover or more to the side are assigned lower probability. This has not improved my solution, perhaps a formal verification of the assumptions I made regarding the probability against `getPerspectiveTransform` algorithm or tweaking the observation concatenation formula would yield a better result.
 
 ![fail][fail]
 
